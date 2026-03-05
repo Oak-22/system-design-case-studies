@@ -1,6 +1,6 @@
-Author: Julian Buccat<br>
-Date: 2026-02-26<br>
-Category: Systems Design Case Study<br>
+Author: Julian Buccat<br/> 
+Date: 2026-02-26<br/>
+Category: Systems Design Case Study<br/>
 Domain: Image Processing Pipeline
 
 # Case Study: Designing a Baseline Image Normalization Pipeline for Heterogeneous Lighting Conditions
