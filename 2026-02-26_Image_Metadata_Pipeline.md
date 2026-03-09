@@ -192,4 +192,4 @@ Smart Collections are best treated as a lightweight declarative indexing layer o
 
 ## Keyword Lists – Hierarchical Taxonomies for Scalable Metadata Management
 
-![Screenshot of Lightroom Classic keyword panel interface showing keyword hierarchies and management tools organized in a tree structure with parent and child keyword entries]('/images/Screenshot 2026-03-08 at 10.33.04 PM.png')
+![Screenshot of Lightroom Classic keyword panel interface showing keyword hierarchies and management tools organized in a tree structure with parent and child keyword entries](images/lightroom-keyword-panel.png)
