@@ -33,9 +33,9 @@ per-image manual execution.
 Unlike Stage 2 normalization, which controls variance in the image data
 itself, Stage 3 controls uncertainty introduced by AI model behavior:
 semantic regions may be detected cleanly, omitted safely, partially
-misbound, or produced with boundaries that require operator judgment.
+misbound, [TODO: finish sentence].
 The systems challenge is to propagate AI-generated mask definitions
-safely across a heterogeneous dataset without copying brittle pixel
+safely across the heterogeneous input data (gallery) without copying brittle pixel
 selections or introducing silent failures that would require extensive
 rework.
 
@@ -56,12 +56,12 @@ and operational usefulness relative to the alternative — manual masking.
 
 ## Key Constraints
 
-- target images vary in subjects, scene composition, and detectable categories
+- target images vary in subjects, scene composition, and detectable semantic categories
 - Lightroom's internal masking implementation logic is not directly observable
 - some propagated masks may be omitted rather than generated on every image
 - AI segmentation quality can degrade or improve in non-obvious,
   image-specific ways
-- automation must remain compatible with later manual review and correction
+- automation must remain logistically compatible with later manual review and correction
 
 <br>
 
@@ -79,11 +79,14 @@ reason, this implementation treats qualification, fault-tolerant
 omission behavior, and human review as required parts of the design
 rather than as optional cleanup after a one-time batch command.
 
+<br>
 
 ### Experiment Objectives
 
 1. **Confirm propagation behavior:** verify that Lightroom reuses mask definitions as procedural instructions and recomputes the target regions per image, rather than copying fixed pixel selections.
 2. **Review operational mask quality:** inspect the generated masks to confirm that expected subjects and regions were detected, contained, and usable for downstream editing.
+
+<br>
 
 ### Evaluation Criteria
 
@@ -116,18 +119,23 @@ usable for downstream edits with bounded human review.
 > the wrong semantic region, such as treating part of a person as
 > pavement or another background surface.
 
+<br>
 
 ### Canonical Image Selection
 From the [gallery](../../docs/terminology.md#gallery), a single [canonical image](../../docs/terminology.md#canonical-image) was
 selected using the criteria defined below
 
+<br>
+
 ### Canonical Image Selection Criteria
 
 This follows a similar batch-enabling pattern to the Stage 2 reference
 image, but the function and scope are different. A Stage 2 reference
-image acts as a visual target for normalization within a comparable
-scene group. A Stage 3 canonical image acts as a semantic source for
-mask definition propagation across the broader
+image acts as a visual target for normalization within one comparable
+scene group, not across the full dataset. Since a single dataset can
+contain many distinct scenes, Stage 2 often requires multiple
+scene-scoped batch applications. A Stage 3 canonical image acts as a semantic source for
+mask definition propagation across the entire
 [gallery](../../docs/terminology.md#gallery).
 
 As established in Stage 2, exposure and scene conditions can vary across
@@ -139,23 +147,35 @@ regions independently. A strong canonical image should therefore contain
 multiple regions that may need independent correction after mask
 propagation completes.
 
-- **Maximum number of in-focus subjects:** More detectable people create more reusable person-mask definitions for downstream edits. Overshooting people masks has little observable downside because Lightroom can omit unavailable masks on images where fewer subjects exist.
+The canonical-image criteria below serve two broader downstream control
+axes. First, **semantic-region control** supports targeted adjustments
+to discrete regions such as people, sky, foliage, and ground. Second,
+**plane-wise control** supports broader aggregate adjustments across
+foreground-subject groupings or background environmental areas. A
+strong canonical image should ideally support both axes well enough that
+later propagation produces useful mask definitions across the gallery.
+
+- **Maximum number of in-focus subjects:** More detectable people create more reusable person-mask definitions for downstream edits. Overshooting people masks has little observable downside because Lightroom can omit unavailable masks on images where fewer subjects exist (i.e. safe omission).
+
 - **Clearly separated primary subjects:** Subjects should be visually distinct enough for Lightroom to bind masks to people rather than background regions or overlapping bodies.
-- **Foilage:** Stage 2 already establishes scene-level foliage hue normalization. In Stage 3, vegetation masks provide optional semantic-region control for further batch adjustment or manual single-image refinement when the Stage 2 baseline is insufficient.
+
+- **Foliage:** Stage 2 already establishes scene-level foliage hue normalization. In Stage 3, vegetation masks provide optional semantic-region control for further batch adjustment or manual single-image refinement when the Stage 2 baseline is insufficient.
+
 - **Sky:** Sky is a high-value semantic edit target because brightness and tonal changes are often visually obvious in sky regions and thus require editing.
+
 - **Background aggregate:** A background mask supports aggregate region control when the entire backline needs exposure or tonal adjustment, even if constituent regions such as sky, foliage, and artificial ground are also masked independently. This matters when background areas are underexposed while near-lens subjects are overexposed, or vice versa.
+
 - **Foreground subject aggregate:** Group-level people masks provide a matching control layer for the frontline: adjusting all human subjects together instead of correcting each person one at a time.
+
 - **Representative scene complexity:** The image should contain enough people and environment variety to generate useful masks, but not be so cluttered that mask boundaries are unusually ambiguous.
+
 - **Usable focus and exposure:** The semantic regions should be sharp and readable enough that mask quality failures are likely to reflect propagation behavior rather than poor source-image quality.
 
 > **Selection note:** The goal is not simply to choose a "beautiful"
 > photo in the subjective sense; it is to choose a source image that can be sliced into as many
-> useful, sufficiently accurate mask definitions as possible. Strong
-> candidates support both semantic-region control, such as people, sky,
-> foliage, and ground, and plane-wise control, such as foreground subject
-> groups and background environmental areas. More masks are useful only
-> when their detection quality is high enough to remain editable after
-> propagation.
+> useful, sufficiently accurate mask definitions as possible. More masks
+> are useful only when their detection quality is high enough to remain
+> editable after propagation.
 
 <br>
 
@@ -173,6 +193,8 @@ required experiment for every semantic category. Strong, high-value
 regions with clearly acceptable behavior can be promoted directly,
 whereas weak or ambiguous regions should first be subset-tested before
 they are allowed into full-batch propagation.
+
+<br>
 
 ### Qualification Logic
 
@@ -199,6 +221,8 @@ Promote, revise, or reject definition
       ↓
 Full-batch propagation only if qualified
 ```
+
+<br>
 
 ### Artificial-Ground Comparison
 
@@ -273,12 +297,30 @@ that, for this category, stronger source signal did not improve
 target-image segmentation quality once a usable source definition
 already existed.
 
----
-🚧 TODO — EVIDENCE
-Type: Workflow
-Asset: artificial_ground_semantic_region_qualification
-Purpose: Document the artificial-ground source-definition comparison and its conclusion that stronger source signal did not improve target-image mask quality under the tested conditions.
----
+![Artificial-ground compare target example 1 canonical source](assets/images/014_artificial-ground-compare-canonical-source-target-example-1.png)
+
+*Figure: Compare target example 1, canonical source (yellow). The canonical-source branch produces a usable broad artificial-ground binding on the same target image used for the alternate-source comparison below.*
+
+<br>
+<br>
+
+![Artificial-ground compare target example 1 alternate source](assets/images/015_artificial-ground-compare-alternate-source-target-example-1.png)
+
+*Figure: Compare target example 1, alternate source (blue). The alternate-source branch does not produce an observably stronger artificial-ground result on this target image than the canonical-source branch above.*
+
+<br>
+<br>
+
+![Artificial-ground compare target example 2 canonical source](assets/images/016_artificial-ground-compare-canonical-source-target-example-2.png)
+
+*Figure: Compare target example 2, canonical source (yellow). On this second target scene, the canonical-source branch again produces the expected broad surface binding without showing a clearly weaker outcome than the alternate-source version.*
+
+<br>
+<br>
+
+![Artificial-ground compare target example 2 alternate source](assets/images/017_artificial-ground-compare-alternate-source-target-example-2.png)
+
+*Figure: Compare target example 2, alternate source (blue). The alternate-source branch remains operationally comparable to the canonical-source branch, reinforcing the observed conclusion that stronger source signal did not materially improve target-image mask quality.*
 
 
 <br>
