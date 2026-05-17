@@ -11,8 +11,8 @@ as reusable batch artifacts rather than one-off, image-specific edits, similarly
 The workflow defines mask logic once on a [canonical image](../../docs/terminology.md#canonical-image),
 then applies that logic across the full [gallery](../../docs/terminology.md#gallery) to test whether Lightroom
 recomputes the masks per image reliably enough for production-scale use.
-The value is reduced repetitive masking effort while preserving a clear
-boundary for operator review when semantic detection fails or degrades.
+The value is reduced repetitive masking effort with a clear review
+boundary when semantic detection fails or degrades.
 
 Within the larger pipeline, Stage 3 extends the deterministic workflow
 pattern to probabilistic AI outputs. AI masks are not treated as
@@ -33,7 +33,8 @@ per-image manual execution.
 Unlike Stage 2 normalization, which controls variance in the image data
 itself, Stage 3 controls uncertainty introduced by AI model behavior:
 semantic regions may be detected cleanly, omitted safely, partially
-misbound, [TODO: finish sentence].
+misbound, or produced with boundaries that still require operator
+judgment.
 The systems challenge is to propagate AI-generated mask definitions
 safely across the heterogeneous input data (gallery) without copying brittle pixel
 selections or introducing silent failures that would require extensive
@@ -75,9 +76,13 @@ copying static pixels. That makes propagation scalable, but it also
 means outcomes are only partially deterministic: a mask may bind
 correctly, bind weakly, omit a missing region safely, or produce a
 plausible result that still requires editorial judgment. For that
-reason, this implementation treats qualification, fault-tolerant
-omission behavior, and human review as required parts of the design
-rather than as optional cleanup after a one-time batch command.
+reason, qualification and human review remain required parts of the
+design rather than optional cleanup after a one-time batch command.
+
+<br>
+
+> [!IMPORTANT]
+> **Governing Principle:** Qualify first, propagate second.
 
 <br>
 
@@ -189,10 +194,15 @@ ambiguous boundaries.
 
 This qualification step is only intended for uncertain semantic regions
 whose batch value appears plausible but is not yet proven. It is not a
-required experiment for every semantic category. Strong, high-value
-regions with clearly acceptable behavior can be promoted directly,
-whereas weak or ambiguous regions should first be subset-tested before
-they are allowed into full-batch propagation.
+required experiment for every semantic category, nor is it meant to
+become a standing requirement for every new mask type. In this stage, it
+functions as a bounded one-off test used to answer a narrower question
+about source-definition quality before full-batch propagation was
+allowed.
+
+Strong, high-value regions with clearly acceptable behavior can be
+promoted directly, whereas weak or ambiguous regions should first be
+subset-tested before they are allowed into full-batch propagation.
 
 <br>
 
@@ -228,8 +238,14 @@ Full-batch propagation only if qualified
 
 For artificial ground, the source-definition comparison used:
 
-- artificial ground generated from the current canonical image
-- artificial ground generated from an alternate image with stronger ground signal
+- artificial ground generated from a canonical image with strong ground signal
+- artificial ground generated from an alternate image with weaker ground signal
+
+The purpose of this comparison was not to establish a general rule that
+better source images are irrelevant. The purpose was to test whether, in
+this uncertain semantic category, stronger source-signal quality
+materially improved propagation outcomes on target images once Lightroom
+could already identify at least some usable source signal.
 
 The qualification test was organized into canonical-source,
 alternate-source, compare, and manual-source collection branches so the
@@ -239,36 +255,6 @@ inferred from memory.
 The canonical-source branch propagated an artificial-ground definition
 created from the Stage 3 canonical image across the target set.
 
-![Canonical-source artificial-ground target example](assets/images/009_artificial-ground-canonical-source-target-mask-example.png)
-
-*Figure: Canonical-source propagation generated an artificial-ground mask on a target image with the expected broad surface binding, but without evidence of unusually improved boundary precision.*
-
-<br>
-<br>
-
-![Canonical-source artificial-ground batch progress](assets/images/010_artificial-ground-canonical-source-batch-progress.png)
-
-*Figure: Lightroom batch-applied the canonical-source artificial-ground definition across the selected target images as another `Updating AI Settings` run, confirming that this comparison used the same propagation mechanism as the rest of Stage 3.*
-
-<br>
-<br>
-
-The alternate-source branch repeated that same procedure using a source
-image chosen specifically for stronger artificial-ground signal.
-
-![Alternate-source artificial-ground target example](assets/images/011_artificial-ground-alternate-source-target-mask-example.png)
-
-*Figure: Alternate-source propagation produced an artificial-ground mask on a target image, but the visible boundary quality was not observably stronger than the canonical-source result.*
-
-<br>
-<br>
-
-![Alternate-source artificial-ground batch run overview](assets/images/012_artificial-ground-alternate-source-batch-run-overview.png)
-
-*Figure: The alternate-source branch was run as its own collection-level propagation test so its generated masks could be compared directly against the canonical-source branch on the same target set.*
-
-<br>
-<br>
 
 In a side-by-side comparison across the target gallery of 64 images,
 artificial-ground propagation from the canonical source and from the
@@ -284,19 +270,6 @@ image itself.
 <br>
 <br>
 
-This suggests that, for this semantic category, target-image signal
-rather than source-definition origin is the dominant constraint. In
-practical terms, once the source image contains enough signal to define
-the semantic class at all, increasing source-signal strength did not
-improve the target-image result under the tested conditions.
-
-This result does not change the canonical-image selection logic. The
-canonical image is still chosen to maximize how many useful semantic
-signals can be defined from one source image. The narrower conclusion is
-that, for this category, stronger source signal did not improve
-target-image segmentation quality once a usable source definition
-already existed.
-
 ![Artificial-ground compare target example 1 canonical source](assets/images/014_artificial-ground-compare-canonical-source-target-example-1.png)
 
 *Figure: Compare target example 1, canonical source (yellow). The canonical-source branch produces a usable broad artificial-ground binding on the same target image used for the alternate-source comparison below.*
@@ -307,6 +280,13 @@ already existed.
 ![Artificial-ground compare target example 1 alternate source](assets/images/015_artificial-ground-compare-alternate-source-target-example-1.png)
 
 *Figure: Compare target example 1, alternate source (blue). The alternate-source branch does not produce an observably stronger artificial-ground result on this target image than the canonical-source branch above.*
+
+This first comparison suggests that, for this semantic category,
+target-image signal rather than source-definition origin is the dominant
+constraint. On this target image, once the source image contained enough
+signal to define the semantic class at all, increasing source-signal
+strength did not improve the target-image result under the tested
+conditions.
 
 <br>
 <br>
@@ -322,10 +302,25 @@ already existed.
 
 *Figure: Compare target example 2, alternate source (blue). The alternate-source branch remains operationally comparable to the canonical-source branch, reinforcing the observed conclusion that stronger source signal did not materially improve target-image mask quality.*
 
+This second comparison reaches the same conclusion. The result does not
+change the canonical-image selection logic: the canonical image is still
+chosen to maximize how many useful semantic signals can be defined from
+one source image. The narrower conclusion is that, for this category,
+stronger source signal did not improve target-image segmentation quality
+once a usable source definition already existed. In practical terms, the
+artificial-ground test suggests that target-image signal is the more
+important determinant of propagation effectiveness after Lightroom has
+correctly identified even a minimal usable source definition.
 
 <br>
 
-## Evidence/Example Application of Mask Propagation (w/ Images)
+---
+
+<br>
+
+## Worfklow Image Evidence/Example Application of Mask Propagation
+
+<br>
 
 ### Mask Definition Phase
 On the canonical image, masks were created manually for each detected category.
@@ -336,6 +331,7 @@ These masks serve as the procedural mask definitions used for the batch experime
 
 Importantly, Lightroom stores these masks as instructions describing how to detect and adjust regions, rather than static pixel selections.
 
+<br>
 
 ### Batch Mask Application
 Only the mask definitions from the canonical image were copied. The
@@ -355,6 +351,9 @@ Examples of variation within the gallery include:
 
 No per-image adjustments were made prior to the batch paste operation.
 
+
+<br>
+
 ### Expected Computational Workload
 The canonical image produced: 7 masks
 
@@ -367,6 +366,8 @@ because they represent broader foreground or background control surfaces.
 The final workload count should be updated after the aggregate-mask and
 artificial-ground qualification experiments are rerun.
 
+<br>
+
 ### Observed System Behavior
 During the paste operation, Lightroom displayed the progress indicator: `Updating AI Settings`
 
@@ -377,11 +378,14 @@ mask_definition → semantic segmentation → region binding
 
 This dynamically recomputes the mask boundaries based on the visual content of the target image.
 
+<br>
+
 ### Fault-Tolerant Mask Binding
 To reiterate, when a mask definition does not correspond to a detectable region in a target image (for example, when fewer people are present), Lightroom does not generate that mask.
 
 Instead, the mask operation is silently omitted for that image, preserving batch safety without requiring manual pre-filtering. This may reduce unnecessary computation, but Lightroom's internal execution behavior is not directly observable.
 
+<br>
 
 This results in:
 
@@ -390,11 +394,12 @@ This results in:
 
 This behavior demonstrates fault-tolerant mask generation, preventing erroneous mask application when a semantic category is absent.
 
+<br>
+
 ### Result
 Only a subset of the theoretical 448 mask operations were generated.
 
 The final mask set applied to each image depended entirely on the semantic content of that image, confirming that Lightroom’s masking pipeline copies procedural mask definitions and recomputes them per image using AI-driven segmentation.
-
 
 <br>
 
@@ -432,6 +437,9 @@ No  → adjust only the needed per-person mask(s)
 Optionally refine individual people after the aggregate edit
 ```
 
+<br>
+<br>
+
 ![Environmental mask aggregate](assets/images/002_environmental-masks-aggregate.png)
 
 *Figure: The Environmental Masks aggregate combines detected background regions such as sky and foliage into a broader environmental control surface.*
@@ -459,7 +467,8 @@ No  → adjust only the needed region-specific mask(s)
 Optionally refine individual regions after the aggregate edit
 ```
 
-
+<br>
+<br>
 
 ![Synchronize all masks settings](assets/images/003_synchronize-mask-definitions-settings.png)
 
@@ -475,6 +484,8 @@ images, such as the full [gallery](../../docs/terminology.md#gallery). Like the 
 sync, this batch operation is fault-tolerant enough to apply broadly,
 with any remaining artifacts reviewed and refined later during the
 manual editing stage that follows the pipeline.
+
+<br>
 
 ![Updating AI settings progress](assets/images/004_ai-mask-definitions-propagation-progress.png)
 
@@ -500,7 +511,8 @@ apply_adjustment(mask)
 Instead of copying results, the system copies the procedure and executes
 it across the gallery.
 
-
+<br>
+<br>
 
 ![Fault-tolerant omission example](assets/images/005_fault-tolerant-subject-mask-omission.png)
 
@@ -580,13 +592,6 @@ That works out to:
 - human review as an explicit control surface around probabilistic automation
 - canonical source selection for maximizing reusable downstream operations
 - bounded batch automation under black-box vendor heuristics
-
-<br>
-
-> [!IMPORTANT]
-> **Governing Principle:** Propagate procedural semantic definitions only
-> after qualification, and treat human review as a required boundary
-> around probabilistic AI outputs rather than as optional cleanup.
 
 <br>
 

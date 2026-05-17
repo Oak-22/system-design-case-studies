@@ -15,17 +15,12 @@ image-by-image execution and toward explicit workflow boundaries,
 qualification steps, reusable batch operations, review checkpoints, and
 rollback-safe handoffs.
 
-The core engineering claim is not that creative editing becomes fully
-automatic. The claim is that a large portion of repeated preparation and
-correction work can be made more deterministic, inspectable, and
-scalable before the final manual editing pass.
-
-Operationally, the pipeline prepares a cleaner, normalized,
-review-bounded working set so obligatory manual refinement and final
-artistic touches happen later with less repeated effort. Its value is
-therefore measured less by full automation than by batchability:
-which recurring corrections can be safely propagated, which must be
-qualified first, and which should remain manual.
+The core engineering claim is not full automation. It is that a large
+portion of repeated preparation and correction work can be made more
+deterministic, inspectable, and scalable before the final manual editing
+pass. Its value is therefore measured less by full automation than by
+batchability: which recurring corrections can be safely propagated,
+which must be qualified first, and which should remain manual.
 
 The repository supports that argument through stage prose, workflow
 image evidence, observed operational results, and runnable

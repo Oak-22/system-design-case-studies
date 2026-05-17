@@ -29,7 +29,7 @@ repeated manual editing.
 Readers will usually benefit from taking one of two paths through the
 repository depending on how much context they want up front.
 
-### Quick Path
+### Quick Path (15 mins)
 
 Use this path if you want a condensed, high-level view of the project
 without reading every stage writeup in full:
@@ -40,7 +40,7 @@ without reading every stage writeup in full:
 4. [Batchability Cost Model](docs/batchability-cost-model.md)
 5. [Scripts](scripts) and [Tests](tests) for runnable validation support
 
-### Extensive Path
+### Extensive Path (30 mins)
 
 Use this path if you want the full systems-design argument, stage
 evidence, and implementation rationale:
@@ -105,11 +105,6 @@ workflow surfaces: Stage 1 establishes deterministic metadata state,
 Stage 2 controls visual variance introduced by capture conditions, and
 Stage 3 constrains probabilistic AI mask outputs through qualification,
 bounded propagation, and human review.
-
-In Stages 2 and 3, batch application does not imply a single static
-transformation applied uniformly across every file. Both stages operate
-at dataset scale while still producing image-specific results at
-runtime: baseline conditioning responds to the state of each image; AI mask propagation generates semantic selections whose effective impact varies by image content.
 
 The pipeline does not replace the final manual editing pass. It prepares
 a cleaner, normalized, review-bounded working set so obligatory manual

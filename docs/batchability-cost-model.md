@@ -8,8 +8,7 @@ For each repeated issue, what is the cost of handling it manually per
 image versus converting it to a batchable process?
 
 This document poses that question as the cost model for assessing
-pipeline value. The unit economics of batchability come from converting
-repeated per-image issues into batch-safe operations.
+pipeline value.
 
 Here, **issue** follows the shared terminology definition: a recurring
 workflow need that creates manual effort. See [Issue](terminology.md#issue).
@@ -31,9 +30,9 @@ correction.
 
 The pipeline value comes from separating issue categories by the
 automation potential of the correction operation used to address them: which
-operations can be immediately through batch application, which require
-qualification and review before batching, and which must remain manual even when the
-same issue appears many times.
+operations can be batch-applied immediately, which require
+qualification first, and which must remain manual even when the same
+issue appears many times.
 
 Representative issue and correction categories include:
 
@@ -126,11 +125,6 @@ mask logic once, propagating it across the
 [gallery](./terminology.md#gallery), and reviewing
 generated results instead of manually brushing each semantic region on
 each image.
-
-Because AI mask quality can partially succeed or fail, the value model
-depends on qualification and review. The pipeline does not remove human
-judgment; it reduces the amount of repetitive manual masking that must
-happen before judgment can be applied.
 
 <br>
 
