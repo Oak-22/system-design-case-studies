@@ -1,6 +1,8 @@
 engineering_learning_workspace/engineering_learning_notes
 .github
 .DS_Store
+__pycache__/
+*.py[cod]
 
 # Generated/local diagram sources and exports.
 docs/*.drawio
