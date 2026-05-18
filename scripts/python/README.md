@@ -61,6 +61,7 @@ scripts/python/
 ├── stage1/
 │   ├── __init__.py
 │   ├── extract_xmp_metadata.py
+│   ├── verify_stage1_xmp-source_pairs.py
 │   ├── validate_stage1_metadata.py
 │   └── build_stage1_manifest.py
 ├── stage2/
