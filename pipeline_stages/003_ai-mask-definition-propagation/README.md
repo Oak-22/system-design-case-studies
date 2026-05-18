@@ -184,7 +184,7 @@ later propagation produces useful mask definitions across the gallery.
 
 <br>
 
-### Semantic Region Qualification Experiment
+### Semantic Region Qualification Framework
 
 Uncertain semantic regions should be qualified before they are promoted
 to full-batch propagation. A canonical image can be strong for people,
@@ -234,7 +234,7 @@ Full-batch propagation only if qualified
 
 <br>
 
-### Artificial-Ground Comparison
+### Artificial-Ground Qualification Comparison
 
 For artificial ground, the source-definition comparison used:
 
@@ -255,6 +255,37 @@ inferred from memory.
 The canonical-source branch propagated an artificial-ground definition
 created from the Stage 3 canonical image across the target set.
 
+![Artificial-ground canonical source target mask example](assets/images/009_artificial-ground-canonical-source-target-mask-example.png)
+
+*Figure: Canonical-source branch setup. The artificial-ground mask defined on the Stage 3 canonical image served as one candidate source definition for qualification testing.*
+
+<br>
+<br>
+
+![Artificial-ground canonical source batch progress](assets/images/010_artificial-ground-canonical-source-batch-progress.png)
+
+*Figure: Canonical-source branch batch run. The canonical-source definition was propagated across the target set for side-by-side review against the alternate-source branch.*
+
+<br>
+<br>
+
+The alternate-source branch propagated an artificial-ground definition
+created from a different image with weaker visible ground signal across
+the same target set.
+
+![Artificial-ground alternate source target mask example](assets/images/011_artificial-ground-alternate-source-target-mask-example.png)
+
+*Figure: Alternate-source branch setup. A second artificial-ground definition was created from an alternate image so source-definition strength could be compared directly.*
+
+<br>
+<br>
+
+![Artificial-ground alternate source batch run overview](assets/images/012_artificial-ground-alternate-source-batch-run-overview.png)
+
+*Figure: Alternate-source branch batch run. The alternate-source definition was propagated across the same targets to support direct branch-level comparison.*
+
+<br>
+<br>
 
 In a side-by-side comparison across the target gallery of 64 images,
 artificial-ground propagation from the canonical source and from the
