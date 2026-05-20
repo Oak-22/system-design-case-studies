@@ -211,6 +211,7 @@ def verdict_for(candidate: MatchCandidate) -> str:
 
 def print_report(folder: Path, images: list[MetadataRecord], xmps: list[MetadataRecord]) -> None:
     """Print a concise folder audit report."""
+    print()
     print(f"Folder: {folder}")
     print(f"JPEGs: {len(images)}")
     print(f"XMPs: {len(xmps)}")
