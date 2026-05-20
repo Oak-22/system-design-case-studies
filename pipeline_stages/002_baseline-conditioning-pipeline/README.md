@@ -206,7 +206,7 @@ scene-level differences.
 ```text
 RAW Images (dataset)
       ↓
-Culled RAW Selection (earliest rollback point)
+Culled Gallery (earliest rollback point)
       ↓
 Post-Cull Virtual Copy Working Branch
 (lineage boundary before Stage 2 conditioning)
@@ -214,19 +214,19 @@ Post-Cull Virtual Copy Working Branch
 
 The initial Virtual Copy branch is created after RAW culling to protect
 the source selection before cleanup and normalization. This creates a
-safe working branch for Stage 2 while preserving the original culled RAW
-selection as the earliest rollback point.
+safe working branch for Stage 2 while preserving the original culled
+[gallery](../../docs/terminology.md#gallery) state as the earliest rollback point.
 
 ---
 
 <br>
 
-### Operation 1 — Dataset-Scale Local Corrective Cleanup
+### Operation 1 — Gallery-Scale Local Corrective Cleanup
 
 ```text
 Post-Cull Virtual Copy Working Branch
       ↓
-Dataset-Scale Local Cleanup Applied Per Frame
+Gallery-Scale Local Cleanup Applied Per Frame
 (validated dust/distraction removal + reviewed Auto Transform)
       ↓
 Cleaned Baseline Inputs
@@ -325,12 +325,11 @@ distinction. In this workflow, tonal state can be normalized across the
 broader dataset, but hue and color-balance decisions are evaluated
 within scene groups.
 
-Unlike Stage 3, where a canonical image serves as the source of
-procedural definitions that Lightroom recomputes image by image, Stage 2
-uses a scene-specific reference image as a visual target for calibration
-judgment. The copied adjustments are therefore mostly static edit
-parameters, even when the visual judgment that selected them is
-scene-specific.
+Stage 2 does not use the Stage 3 canonical-image pattern. Instead, it
+uses a scene-specific reference image as a visual target for
+calibration judgment. The copied adjustments are therefore mostly
+static edit parameters, even when the visual judgment that selected
+them is scene-specific.
 
 This distinction matters because the goal is not visual flattening. The
 goal is to make later edits behave more predictably by reducing
@@ -685,7 +684,7 @@ from a different lighting environment, as explained below.
 <br>
 
 
-![Scene-scoped cross-image color normalization](assets/diagrams/scene-scoped-cross-image-color-normalization-v2.jpg)
+![Scene-scoped cross-image color normalization](assets/diagrams/scene-scoped-cross-image-color-normalization-v3.jpg)
 
 *Figure: Scene-scoped cross-image color normalization proceeds in two steps. First, automated tonal normalization reduces frame-level exposure variance across comparable images, while also allowing subtle, secondary chromatic shifts. Second, scene-level reference-image color calibration aligns within-scene hue drift, such as inconsistent green cast, without forcing unrelated scenes toward one global color target.*
 
@@ -770,17 +769,6 @@ The current implementation is designed as a **local, editor-in-the-loop batch pi
 This design favors **editing throughput, controllability, and local responsiveness**. Operations 1 and 2 are the conditioning operations that establish a normalized baseline, while the output boundary preserves that baseline during experimentation and revision.
 
 In practical terms, the pipeline is intended to scale across **hundreds of RAW images per dataset**. The relevant engineering question is therefore not formal algorithmic complexity in the abstract, but rather **observed operational latency, throughput, and reduction in manual intervention** as dataset size increases.
-
-<br>
-
-### Local Workflow Scope
-
-The current implementation is optimized for a local Lightroom workflow
-controlled by a single editor. This makes it practical and immediately
-useful, but it also means the system is not designed for distributed
-execution, real-time serving, or cloud-native orchestration. However,
-the principles and pipeline design demonstrated here can be adopted and
-tuned for similarly purposed workflows.
 
 <br>
 

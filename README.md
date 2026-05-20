@@ -24,6 +24,16 @@ repeated manual editing.
 
 <br>
 
+> [!IMPORTANT]
+> **Read the shared terminology first.** This repository uses
+> project-specific workflow vocabulary such as `gallery`,
+> `reference image`, and `canonical image` in narrow, technical ways.
+> Open [docs/terminology.md](docs/terminology.md) in a separate tab
+> before reading the stage writeups if you want the later diagrams and
+> handoff language to make sense on first pass.
+
+<br>
+
 ## Reading Paths
 
 Readers will usually benefit from taking one of two paths through the
