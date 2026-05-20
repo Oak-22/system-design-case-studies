@@ -474,10 +474,8 @@ People masks generated
       ↓
 Does the needed edit apply to all or most people?
       ↓
-Yes → adjust the People Mask aggregate
+Yes → adjust the People Mask aggregate → Optionally refine individual people after the aggregate edit
 No  → adjust only the needed per-person mask(s)
-      ↓
-Optionally refine individual people after the aggregate edit
 ```
 
 <br>
